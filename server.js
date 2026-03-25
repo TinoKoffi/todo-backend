@@ -11,7 +11,7 @@ const PORT = process.env.PORT || 3001;
 app.use(cors({
   origin: [
     "http://localhost:5173",
-    "https://todo-frontend-two-lac.vercel.app/" // ← ton URL Vercel
+    "https://todo-frontend-two-lac.vercel.app"
   ]
 }));
 app.use(express.json());
