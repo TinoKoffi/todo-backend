@@ -85,18 +85,21 @@ router.patch("/:id/complete", async (req, res) => {
       data: { completed: true, locked: true },
     });
 
-    // Envoyer l'email
-    const user = await prisma.user.findUnique({ where: { id: req.userId } });
-    if (user) {
-      await sendCompletionEmail(
-        user.email,
-        user.username,
-        todo.text,
-        customMessage || "Bravo, continue comme ça ! 💪"
-      );
-    }
-
+    // Répondre immédiatement sans attendre l'email
     res.json(updated);
+
+    // Envoyer l'email en arrière-plan
+    prisma.user.findUnique({ where: { id: req.userId } }).then((user) => {
+      if (user) {
+        sendCompletionEmail(
+          user.email,
+          user.username,
+          todo.text,
+          customMessage || "Bravo, continue comme ça ! 💪"
+        ).catch((err) => console.error("Erreur email:", err));
+      }
+    });
+
   } catch {
     res.status(500).json({ error: "Erreur serveur." });
   }
