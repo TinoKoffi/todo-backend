@@ -84,19 +84,23 @@ router.patch("/:id/complete", async (req, res) => {
       data: { completed: true, locked: true },
     });
 
-    // Répondre immédiatement
-    res.json(updated);
+    // Envoyer email en arrière-plan AVANT de répondre
+    const user = await prisma.user.findUnique({ where: { id: req.userId } });
+    if (user) {
+      sendCompletionEmail(
+        user.email,
+        user.username,
+        todo.text,
+        customMessage || "Bravo, continue comme ça ! 💪"
+      ).catch((err) => console.error("Erreur email:", err));
+    }
 
-    // Envoyer email en arrière-plan
-    sendCompletionEmail(
-      null,
-      "Tino",
-      todo.text,
-      customMessage || "Bravo, continue comme ça ! 💪"
-    ).catch((err) => console.error("Erreur email:", err));
+    // Une seule réponse
+    return res.json(updated);
 
-  } catch {
-    res.status(500).json({ error: "Erreur serveur." });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: "Erreur serveur." });
   }
 });
 
