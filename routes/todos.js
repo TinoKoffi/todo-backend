@@ -3,6 +3,7 @@
 const express = require("express");
 const prisma = require("../database");
 const authMiddleware = require("../middleware/auth");
+const { sendCompletionEmail } = require("../mailer");
 
 const router = express.Router();
 
